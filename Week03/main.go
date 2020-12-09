@@ -13,16 +13,17 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-/**
-context需要结合errgroup使用吗
-
+/** 
+TODO
+1.context需要结合errgroup使用吗
+2.chan需要指针方式传入吗?
+3.close chan会多写报错吗?(没取)
 */
 func main() {
 	fmt.Println("main start")
 
 	g := new(errgroup.Group)
 	close := make(chan int)
-	ctx := context.Background()
 
 	g.Go(func() error {
 		err := listenSignal(close)
@@ -34,16 +35,9 @@ func main() {
 	})
 
 	if err := g.Wait(); err == nil {
-		fmt.Println("mian over")
+		fmt.Println("main over")
 	}
 
-	//TODO,附加上,关闭后处理任务,超时情况,强制关闭
-	// //10s超时会触发ctx.Done(),cancel即取消定时器
-	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-
-	// go listenSignal(close)
-	// <-close
-	fmt.Println("main over")
 }
 
 func listenSignal(close chan int) error {
@@ -51,59 +45,81 @@ func listenSignal(close chan int) error {
 	signal.Notify(c)
 	fmt.Println("listenSignal start...")
 
-	switch s := <-c; s {
-	case syscall.SIGINT, syscall.SIGTERM:
-		fmt.Println("receive close signal =", s)
+	select{
+	case <-c:
+		//收到信号,先不区分信号,统一视为关闭
 		serverExit(close)
-		return errors.New("receive close signal")
-	default:
-		//TODO,会导致signal goroutine失效
-		fmt.Println("unknow signal =", s)
+		fmt.Println("listenSignal close...")
+		return nil
+	case <-close:
+		//收到关闭服务信号
+		fmt.Println("listenSignal close...")
 		return nil
 	}
+
+	// switch s := <-c; s {
+	// case syscall.SIGINT, syscall.SIGTERM:
+	// 	fmt.Println("receive close signal =", s)
+	// 	serverExit(close)
+	// 	// return errors.New("receive close signal")
+	// 	return nil
+	// default:
+	// 	//TODO,会导致signal goroutine失效
+	// 	fmt.Println("unknow signal =", s)
+	// 	return nil
+	// }
 }
 
 func serverExit(close chan int) {
 	close <- 1
 }
-
-//超时 级联退出,
-func exitTimer() {
-
+// hello world, the web server
+func HelloServer(w http.ResponseWriter, req *http.Request) {
+	io.WriteString(w, "hello, world!\n")
 }
-
-func serverStart(close chan int) error {
-	// // http.HandlerFunc("/", func(w http.ResponseWriter, r *http.Request) {})
-	// httpServer := http.Server{
-	// 	Addr:    ":8888",
-	// 	Handler: http.DefaultServeMux,
-	// }
-
-	// //err:too many arguments to conversion to http.HandlerFunc
-	// http.HandlerFunc("/", func(w http.ResponseWriter, r *http.Request) {
-	// 	fmt.Println("receive http request")
-	// })
-	// http.HandlerFunc("/", func() {
-	// 	fmt.Println("receive http request")
-	// })
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "just another http server...")
-	})
-
+func serverStart(close chan int,ctx context) error {
+	http.HandleFunc("/hello", HelloServer)
 	err := http.ListenAndServe(":8888", nil)
 	if err != nil {
 		fmt.Println("http server start err", err)
 		//TODO启动err
-		close <- 1
-		return errors.New("http server start err")
+		serverExit(close)
+		return nil
+	}
+	fmt.Println("http server start")
+	select{
+	case <-close:
+		//收到关闭服务信号
+		fmt.Println("http server close begin")
+
+		//可能需要做一些处理再关闭,但是需要设置定时器,超时强制关闭
+		//这里还未看看context 配合 errgroup的文档,先这样处理,TODO优化超时代码
+		//10s超时会触发ctx.Done(),cancel即取消定时器
+		//伪代码
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+		done := make(chan int)
+		go func(){
+			for(i:0;i<5;i++){
+				time.Sleep(1)
+				fmt.Println("do someting"+i)
+				if(i == 5){
+					done <- 1
+					cancel()
+				}
+			}
+		}()
+		
+		select{
+		case <- done:
+			fmt.Println("http server close over")
+			return nil
+		case <-ctx.Done():
+			fmt.Println("http server timeout force close")
+			return nil
+		}
+		
 	}
 
-	fmt.Println("http server start")
-	<-close
-	return errors.New("server close")
-}
-func serverHandler(rw http.ResponseWriter, req *http.Request) {
-	fmt.Println("receive http request")
 }
 
 // package main
