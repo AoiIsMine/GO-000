@@ -17,6 +17,8 @@ main监听errgroup wait,来确认所有协程是否关闭
 1. 原理
 2. errgroup,context,http等具体api
 以及使用过程遇到的问题总结
+3. 弄清楚context与errgroup结合使用,
+4. context父子关系,cancel影响,原理
 
 <!-- ## 大致思路 error
 利用errgroup创建goroutine,一个跑http server,一个监听linux signal信号事件
@@ -40,6 +42,7 @@ http server收到close chan数据,立即执行关闭操作,return nil
 
 // context.WithTimeout
 // https://golang.google.cn/pkg/context/#pkg-examples
+//https://studygolang.com/articles/23247?fr=sidebar
 // https://blog.csdn.net/yzf279533105/article/details/107292247
 
 // os signal
