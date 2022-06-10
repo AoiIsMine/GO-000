@@ -1,4 +1,4 @@
-module go-battle/server
+module go-battle
 
 go 1.18
 
