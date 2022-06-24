@@ -1,8 +1,11 @@
 # 开发目标流程
 <!-- 1. gin生成项目(没有脚手架),目录构造 -->
-1. 简单路由
+<!-- 1. 简单路由 -->
 2. 配置文件
+    https://github.com/spf13/viper
+3. controller与service的关联
 2. db
+    * gorm迁移
 3. redis
 4. 日志
 5. auth
@@ -11,7 +14,7 @@
 8. 整理,markdown
 9. 测试提供
 
-
+10. go微服务实现,账号鉴权系统
 ***
 # GO
 
