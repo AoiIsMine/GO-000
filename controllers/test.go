@@ -1,15 +1,17 @@
 package controllers
 
 import (
-	"fmt"
+	"go-battle/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Ping(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, "pong")
+	data := service.GetTestService().Ping()
+	c.IndentedJSON(http.StatusOK, data)
 }
 func TestName(c *gin.Context) {
-	c.String(http.StatusOK, fmt.Sprintf("nameIs %s", c.Param("name")))
+	data := service.GetTestService().TestName(c.Param("name"))
+	c.String(http.StatusOK, data)
 }

@@ -19,8 +19,9 @@ func TestReadConfig(t *testing.T) {
 	// if name != "ha" {
 	// 	t.Fatal("value is error = ", name)
 	// }
-	time.Sleep(10 * time.Second) //没用??
-	fmt.Println("name after  == ", name)
+	time.Sleep(10 * time.Second)
+	name1 := viper.GetString("testName")
+	fmt.Println("name after  == ", name1)
 }
 
 func configInit() error {
