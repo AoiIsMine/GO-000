@@ -4,8 +4,8 @@
 <!-- 2. 配置文件 -->
 3. controller与service的关联
 依赖注入相关
-2. db
-    * gorm迁移
+<!-- 2. db
+    * gorm迁移 -->
 3. redis
 4. 日志
 5. auth

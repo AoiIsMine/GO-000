@@ -1,17 +1,34 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-	"go-battle/routers"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
+	"gorm.io/gorm"
+
+	"go-battle/common/db"
+	"go-battle/models"
+	"go-battle/routers"
+	"go-battle/service"
 )
 
 func main() {
-	if err := configInit(); err != nil {
-		panic(fmt.Sprintf("config init error ", err))
+	var err error
+	if err = configInit(); err != nil {
+		panic(fmt.Sprintln("config init error ", err))
 	}
+
+	if err = db.Init(); err != nil {
+		panic(fmt.Sprintln("db init error ", err))
+	}
+
+	if err = migrate(db.DBConn()); err != nil {
+		panic(fmt.Sprintln("db migrate error ", err))
+	}
+
+	serviceInit(db.DBConn())
 
 	router := routers.RoutersInit()
 	router.Run("localhost:3000")
@@ -23,11 +40,10 @@ func configInit() error {
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Config file not found
-			return fmt.Errorf("Config file not found")
-
+			return errors.New("config file not found")
 		} else {
 			// Config file was found but another error was produced
-			return fmt.Errorf("Config file was found but another error is %v", err)
+			return fmt.Errorf("config file was found but another error is %v", err)
 
 		}
 	}
@@ -40,4 +56,13 @@ func configInit() error {
 	})
 	viper.WatchConfig()
 	return nil
+}
+
+func serviceInit(dbConn *gorm.DB) {
+	service.TestServiceInit(dbConn)
+}
+
+//TODO优化,获取包内所有结构体
+func migrate(dbConn *gorm.DB) error {
+	return dbConn.AutoMigrate(&models.Test{})
 }
