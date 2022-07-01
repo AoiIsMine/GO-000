@@ -9,8 +9,8 @@ import (
 	"gorm.io/gorm"
 
 	"go-battle/common/db"
-	"go-battle/models"
-	"go-battle/routers"
+	"go-battle/model"
+	"go-battle/router"
 	"go-battle/service"
 )
 
@@ -30,8 +30,10 @@ func main() {
 
 	serviceInit(db.DBConn())
 
-	router := routers.RoutersInit()
-	router.Run("localhost:3000")
+	router := router.RoutersInit()
+	host := viper.GetString("server.host")
+	port := viper.GetString("server.port")
+	router.Run(fmt.Sprintf("%s:%s", host, port))
 }
 
 func configInit() error {
@@ -64,5 +66,5 @@ func serviceInit(dbConn *gorm.DB) {
 
 //TODO优化,获取包内所有结构体
 func migrate(dbConn *gorm.DB) error {
-	return dbConn.AutoMigrate(&models.Test{})
+	return dbConn.AutoMigrate(&model.Test{})
 }

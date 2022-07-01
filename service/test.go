@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	. "go-battle/models"
+	. "go-battle/model"
 
 	"github.com/spf13/viper"
 	"gorm.io/gorm"

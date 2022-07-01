@@ -1,7 +1,7 @@
-package routers
+package router
 
 import (
-	"go-battle/controllers"
+	"go-battle/controller"
 
 	"github.com/gin-gonic/gin"
 )
@@ -10,8 +10,8 @@ func RoutersInit() *gin.Engine {
 	router := gin.Default()
 	//route group
 	v1 := router.Group("/v1")
-	v1.GET("/ping", controllers.Ping)
+	v1.GET("/ping", controller.Ping)
 	//route param
-	v1.GET("/test/:name", controllers.TestName)
+	v1.GET("/test/:name", controller.TestName)
 	return router
 }
