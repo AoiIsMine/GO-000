@@ -6,7 +6,7 @@
 依赖注入相关
 <!-- 2. db
     * gorm迁移 -->
-3. redis
+<!-- 3. redis -->
 4. 日志
 5. auth
 6. websocket

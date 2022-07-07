@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/viper"
 	"gorm.io/gorm"
 
+	"go-battle/common/cache"
 	"go-battle/common/db"
 	"go-battle/model"
 	"go-battle/router"
@@ -26,6 +27,10 @@ func main() {
 
 	if err = migrate(db.DBConn()); err != nil {
 		panic(fmt.Sprintln("db migrate error ", err))
+	}
+
+	if err = cache.Init(); err != nil {
+		panic(fmt.Sprintln("redis init error ", err))
 	}
 
 	serviceInit(db.DBConn())
